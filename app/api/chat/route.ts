@@ -16,10 +16,8 @@ export async function POST(req: Request) {
     const result = await queryKnowledgeBase(message, sessionId);
     return NextResponse.json(result);
   } catch (err) {
+    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
     console.error("[/api/chat]", err);
-    return NextResponse.json(
-      { error: "Failed to query knowledge base. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
