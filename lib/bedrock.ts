@@ -7,17 +7,16 @@ import {
 const KB_ID = "CZIH7OWOAT";
 const MODEL_ARN =
   "arn:aws:bedrock:us-east-1:821788677871:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0";
-const REGION = process.env.AWS_REGION ?? "us-east-1";
+const REGION = process.env.BEDROCK_REGION ?? "us-east-1";
 
 function getClient() {
   return new BedrockAgentRuntimeClient({
     region: REGION,
     credentials:
-      process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+      process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY
         ? {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            sessionToken: process.env.AWS_SESSION_TOKEN,
+            accessKeyId: process.env.BEDROCK_ACCESS_KEY_ID,
+            secretAccessKey: process.env.BEDROCK_SECRET_ACCESS_KEY,
           }
         : undefined, // falls back to IAM role / instance profile
   });
