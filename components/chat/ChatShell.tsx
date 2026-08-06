@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
 import { configureAmplify, COGNITO_CONFIGURED } from "@/lib/auth";
-import { ChatHeader } from "./ChatHeader";
+import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
 import { ChatInput } from "./ChatInput";
+import { ChatHeader } from "./ChatHeader";
 import type { Message } from "./MessageBubble";
 import type { ChatSource } from "@/lib/bedrock";
 
@@ -23,24 +24,34 @@ function getInitials(email?: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
+function makeSession(title = "New conversation"): ChatSession {
+  return { id: nanoid(), title, createdAt: Date.now() };
+}
+
+interface SessionData {
+  session: ChatSession;
+  messages: Message[];
+  bedrockSessionId?: string;
+}
+
 export function ChatShell() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const firstSession = makeSession();
+  const [sessionMap, setSessionMap] = useState<Record<string, SessionData>>({
+    [firstSession.id]: { session: firstSession, messages: [], bedrockSessionId: undefined },
+  });
+  const [activeId, setActiveId] = useState(firstSession.id);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!COGNITO_CONFIGURED) {
-      setAuthChecked(true);
-      return;
-    }
+    if (!COGNITO_CONFIGURED) { setAuthChecked(true); return; }
     getCurrentUser()
       .then(() => fetchUserAttributes())
       .then((attrs) => setUserEmail(attrs.email ?? undefined))
       .catch(() => {
-        // Not signed in — redirect to Cognito hosted UI
         const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
         const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
         if (domain && clientId) {
@@ -51,6 +62,36 @@ export function ChatShell() {
       .finally(() => setAuthChecked(true));
   }, []);
 
+  const activeData = sessionMap[activeId];
+  const sessions = Object.values(sessionMap)
+    .map((d) => d.session)
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  function newSession() {
+    const s = makeSession();
+    setSessionMap((prev) => ({
+      ...prev,
+      [s.id]: { session: s, messages: [], bedrockSessionId: undefined },
+    }));
+    setActiveId(s.id);
+    setInput("");
+  }
+
+  function deleteSession(id: string) {
+    setSessionMap((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      if (Object.keys(next).length === 0) {
+        const s = makeSession();
+        next[s.id] = { session: s, messages: [], bedrockSessionId: undefined };
+        setActiveId(s.id);
+      } else if (id === activeId) {
+        setActiveId(Object.keys(next)[0]);
+      }
+      return next;
+    });
+  }
+
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
@@ -60,15 +101,32 @@ export function ChatShell() {
       const placeholderId = nanoid();
       const placeholder: Message = { id: placeholderId, role: "assistant", content: "", loading: true };
 
-      setMessages((prev) => [...prev, userMsg, placeholder]);
+      // Auto-title the session from the first message
+      setSessionMap((prev) => {
+        const d = prev[activeId];
+        const isFirstMessage = d.messages.length === 0;
+        const title = isFirstMessage
+          ? trimmed.slice(0, 40) + (trimmed.length > 40 ? "…" : "")
+          : d.session.title;
+        return {
+          ...prev,
+          [activeId]: {
+            ...d,
+            session: { ...d.session, title },
+            messages: [...d.messages, userMsg, placeholder],
+          },
+        };
+      });
+
       setInput("");
       setLoading(true);
 
       try {
+        const bedrockSessionId = sessionMap[activeId]?.bedrockSessionId;
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, sessionId }),
+          body: JSON.stringify({ message: trimmed, sessionId: bedrockSessionId }),
         });
 
         const data: { answer: string; sources: ChatSource[]; sessionId: string; error?: string } =
@@ -76,60 +134,98 @@ export function ChatShell() {
 
         if (!res.ok) throw new Error(data.error ?? "Unknown error");
 
-        if (data.sessionId) setSessionId(data.sessionId);
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === placeholderId
-              ? { ...m, content: data.answer, sources: data.sources, loading: false }
-              : m
-          )
-        );
+        setSessionMap((prev) => {
+          const d = prev[activeId];
+          return {
+            ...prev,
+            [activeId]: {
+              ...d,
+              bedrockSessionId: data.sessionId || d.bedrockSessionId,
+              messages: d.messages.map((m) =>
+                m.id === placeholderId
+                  ? { ...m, content: data.answer, sources: data.sources, loading: false }
+                  : m
+              ),
+            },
+          };
+        });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Something went wrong.";
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === placeholderId
-              ? { ...m, content: `Sorry, I encountered an error: ${msg}`, loading: false }
-              : m
-          )
-        );
+        setSessionMap((prev) => {
+          const d = prev[activeId];
+          return {
+            ...prev,
+            [activeId]: {
+              ...d,
+              messages: d.messages.map((m) =>
+                m.id === placeholderId
+                  ? { ...m, content: `Sorry, I encountered an error: ${msg}`, loading: false }
+                  : m
+              ),
+            },
+          };
+        });
       } finally {
         setLoading(false);
       }
     },
-    [loading, sessionId]
+    [loading, activeId, sessionMap]
   );
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[oklch(0.09_0.025_240)]">
+      <div className="flex h-screen items-center justify-center bg-[#f0f4f9]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[oklch(0.55_0.22_260)] flex items-center justify-center animate-pulse">
-            <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-              <path d="M14 3C8.48 3 4 7.48 4 13c0 2.39.86 4.58 2.27 6.29L4 25l5.71-2.27C11.42 23.89 12.69 24.2 14 24.2c5.52 0 10-4.48 10-10S19.52 3 14 3z" fill="white"/>
-            </svg>
+          <div className="w-11 h-11 rounded-xl bg-[#1a56db] flex items-center justify-center animate-pulse">
+            <MessageSquareIcon />
           </div>
-          <p className="text-sm text-[oklch(0.55_0.05_240)]">Loading ProductIQ…</p>
+          <p className="text-base text-[#4a6889]">Loading ProductIQ…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[oklch(0.09_0.025_240)]">
-      <ChatHeader userEmail={userEmail} />
-      <MessageThread
-        messages={messages}
-        onSuggestion={sendMessage}
-        userInitials={getInitials(userEmail)}
+    <div className="flex h-screen bg-[#f0f4f9] overflow-hidden">
+      <SessionSidebar
+        sessions={sessions}
+        activeId={activeId}
+        collapsed={sidebarCollapsed}
+        onSelect={setActiveId}
+        onNew={newSession}
+        onDelete={deleteSession}
+        onToggle={() => setSidebarCollapsed((v) => !v)}
+        userEmail={userEmail}
       />
-      <ChatInput
-        value={input}
-        onChange={setInput}
-        onSubmit={() => sendMessage(input)}
-        loading={loading}
-      />
+
+      <div className="flex flex-col flex-1 min-w-0">
+        <ChatHeader
+          title={activeData?.session.title ?? "New conversation"}
+          userEmail={userEmail}
+          userInitials={getInitials(userEmail)}
+          onNewSession={newSession}
+          showNewButton={sidebarCollapsed}
+        />
+        <MessageThread
+          messages={activeData?.messages ?? []}
+          onSuggestion={sendMessage}
+          userInitials={getInitials(userEmail)}
+        />
+        <ChatInput
+          value={input}
+          onChange={setInput}
+          onSubmit={() => sendMessage(input)}
+          loading={loading}
+        />
+      </div>
     </div>
+  );
+}
+
+function MessageSquareIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
   );
 }

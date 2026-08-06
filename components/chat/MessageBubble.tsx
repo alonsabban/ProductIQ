@@ -18,10 +18,10 @@ interface MessageBubbleProps {
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 h-5 px-1">
-      <span className="typing-dot w-2 h-2 rounded-full bg-[oklch(0.55_0.22_260)]" />
-      <span className="typing-dot w-2 h-2 rounded-full bg-[oklch(0.55_0.22_260)]" />
-      <span className="typing-dot w-2 h-2 rounded-full bg-[oklch(0.55_0.22_260)]" />
+    <div className="flex items-center gap-1.5 h-6 px-1">
+      <span className="typing-dot w-2.5 h-2.5 rounded-full bg-[#1a56db]" />
+      <span className="typing-dot w-2.5 h-2.5 rounded-full bg-[#1a56db]" />
+      <span className="typing-dot w-2.5 h-2.5 rounded-full bg-[#1a56db]" />
     </div>
   );
 }
@@ -33,10 +33,8 @@ function renderContent(text: string) {
 
   while (i < lines.length) {
     const line = lines[i];
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
+    if (line.trim() === "") { i++; continue; }
+
     if (line.startsWith("- ") || line.startsWith("* ")) {
       const items: string[] = [];
       while (i < lines.length && (lines[i].startsWith("- ") || lines[i].startsWith("* "))) {
@@ -75,35 +73,35 @@ export function MessageBubble({ message, userInitials }: MessageBubbleProps) {
       {/* Avatar */}
       <div
         className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5",
+          "w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 mt-0.5",
           isUser
-            ? "bg-[oklch(0.45_0.20_260)] text-white"
-            : "bg-[oklch(0.18_0.05_240)] border border-[oklch(0.25_0.06_240)] text-[oklch(0.65_0.18_230)]"
+            ? "bg-[#1a56db] text-white"
+            : "bg-white border border-[#ccd9eb] text-[#1a56db] shadow-sm"
         )}
       >
-        {isUser ? userInitials : <Bot size={15} />}
+        {isUser ? userInitials : <Bot size={17} />}
       </div>
 
       {/* Bubble */}
-      <div className={cn("flex flex-col max-w-[75%]", isUser ? "items-end" : "items-start")}>
+      <div className={cn("flex flex-col max-w-[78%]", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
-            "px-4 py-3 rounded-2xl text-sm leading-relaxed",
+            "px-5 py-3.5 rounded-2xl text-base leading-relaxed shadow-sm",
             isUser
-              ? "bg-[oklch(0.45_0.20_260)] text-white rounded-tr-sm"
-              : "bg-[oklch(0.14_0.035_240)] border border-[oklch(0.22_0.05_240)] text-[oklch(0.92_0.01_230)] rounded-tl-sm"
+              ? "bg-[#1a56db] text-white rounded-tr-sm"
+              : "bg-white border border-[#ccd9eb] text-[#0f1f35] rounded-tl-sm"
           )}
         >
           {message.loading ? (
             <TypingIndicator />
           ) : isUser ? (
-            <p className="whitespace-pre-wrap">{message.content}</p>
+            <p className="whitespace-pre-wrap text-base">{message.content}</p>
           ) : (
             <div className="prose-chat">{renderContent(message.content)}</div>
           )}
         </div>
         {!message.loading && !isUser && message.sources && message.sources.length > 0 && (
-          <div className="px-1">
+          <div className="px-1 mt-1">
             <CitationChip sources={message.sources} />
           </div>
         )}

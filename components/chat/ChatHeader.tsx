@@ -1,14 +1,18 @@
 "use client";
 
-import { LogOut, MessageSquare } from "lucide-react";
+import { LogOut, Plus } from "lucide-react";
 import { signOut } from "aws-amplify/auth";
 import { COGNITO_CONFIGURED } from "@/lib/auth";
 
 interface ChatHeaderProps {
+  title: string;
   userEmail?: string;
+  userInitials: string;
+  onNewSession: () => void;
+  showNewButton: boolean;
 }
 
-export function ChatHeader({ userEmail }: ChatHeaderProps) {
+export function ChatHeader({ title, userEmail, userInitials, onNewSession, showNewButton }: ChatHeaderProps) {
   async function handleSignOut() {
     if (COGNITO_CONFIGURED) {
       await signOut();
@@ -16,38 +20,35 @@ export function ChatHeader({ userEmail }: ChatHeaderProps) {
     }
   }
 
-  const initials = userEmail
-    ? userEmail.split("@")[0].slice(0, 2).toUpperCase()
-    : "??";
-
   return (
-    <header className="h-14 flex items-center justify-between px-5 border-b border-[oklch(0.18_0.04_240)] bg-[oklch(0.10_0.028_240)] shrink-0">
-      {/* Logo */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-[oklch(0.55_0.22_260)] flex items-center justify-center">
-          <MessageSquare size={14} className="text-white" />
-        </div>
-        <span className="font-semibold text-[oklch(0.92_0.01_230)] tracking-tight">
-          Product<span className="text-[oklch(0.60_0.22_260)]">IQ</span>
-        </span>
-        <span className="hidden sm:block text-[10px] text-[oklch(0.42_0.04_240)] border border-[oklch(0.22_0.05_240)] rounded px-1.5 py-0.5 ml-1">
-          CyberArk Docs
-        </span>
+    <header className="h-14 flex items-center justify-between px-5 border-b border-[#ccd9eb] bg-white shrink-0 shadow-sm">
+      <div className="flex items-center gap-3 min-w-0">
+        {showNewButton && (
+          <button
+            onClick={onNewSession}
+            className="flex items-center justify-center w-8 h-8 rounded-lg border border-[#ccd9eb] hover:bg-[#e8eef6] text-[#4a6889] transition-colors shrink-0"
+          >
+            <Plus size={15} />
+          </button>
+        )}
+        <h1 className="text-base font-semibold text-[#0f1f35] truncate">{title}</h1>
       </div>
 
-      {/* User */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         {userEmail && (
-          <span className="hidden sm:block text-xs text-[oklch(0.58_0.05_240)] truncate max-w-[180px]">
-            {userEmail}
-          </span>
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#1a56db] flex items-center justify-center text-sm font-semibold text-white">
+              {userInitials}
+            </div>
+            <span className="text-sm text-[#4a6889] truncate max-w-[160px]">{userEmail}</span>
+          </div>
         )}
         {COGNITO_CONFIGURED && (
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-xs text-[oklch(0.50_0.04_240)] hover:text-[oklch(0.75_0.05_230)] transition-colors px-2 py-1.5 rounded-lg hover:bg-[oklch(0.15_0.03_240)]"
+            className="flex items-center gap-1.5 text-sm text-[#4a6889] hover:text-[#0f1f35] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#e8eef6]"
           >
-            <LogOut size={13} />
+            <LogOut size={14} />
             <span className="hidden sm:inline">Sign out</span>
           </button>
         )}
