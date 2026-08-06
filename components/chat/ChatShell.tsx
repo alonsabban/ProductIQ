@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
-import { Hub } from "aws-amplify/utils";
 import { configureAmplify, COGNITO_CONFIGURED, isOAuthCallback } from "@/lib/auth";
 import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
@@ -61,43 +60,32 @@ export function ChatShell() {
       }
     }
 
-    // If we're landing from a Cognito redirect (?code=...), wait for Amplify
-    // to exchange the code for tokens before checking auth state.
-    if (isOAuthCallback()) {
-      const unsubscribe = Hub.listen("auth", ({ payload }) => {
-        if (payload.event === "signedIn") {
-          fetchUserAttributes()
-            .then((attrs) => setUserEmail(attrs.email ?? undefined))
-            .finally(() => {
-              setAuthChecked(true);
-              // Clean the ?code= from the URL without a reload
-              window.history.replaceState({}, "", window.location.pathname);
-            });
-          unsubscribe();
+    async function checkAuth() {
+      const onCallback = isOAuthCallback();
+      const maxAttempts = onCallback ? 10 : 1;
+      const delay = 600;
+
+      for (let i = 0; i < maxAttempts; i++) {
+        try {
+          await getCurrentUser();
+          const attrs = await fetchUserAttributes();
+          setUserEmail(attrs.email ?? undefined);
+          if (onCallback) {
+            window.history.replaceState({}, "", window.location.pathname);
+          }
+          setAuthChecked(true);
+          return;
+        } catch {
+          if (i < maxAttempts - 1) {
+            await new Promise((r) => setTimeout(r, delay));
+          }
         }
-        if (payload.event === "signInWithRedirect_failure") {
-          unsubscribe();
-          redirectToLogin();
-        }
-      });
-      // Safety timeout — if Hub never fires, fall through to normal check
-      const timer = setTimeout(() => {
-        unsubscribe();
-        getCurrentUser()
-          .then(() => fetchUserAttributes())
-          .then((attrs) => setUserEmail(attrs.email ?? undefined))
-          .catch(redirectToLogin)
-          .finally(() => setAuthChecked(true));
-      }, 5000);
-      return () => { unsubscribe(); clearTimeout(timer); };
+      }
+      // All attempts failed — not signed in
+      redirectToLogin();
     }
 
-    // Normal page load — check if already signed in
-    getCurrentUser()
-      .then(() => fetchUserAttributes())
-      .then((attrs) => setUserEmail(attrs.email ?? undefined))
-      .catch(redirectToLogin)
-      .finally(() => setAuthChecked(true));
+    checkAuth();
   }, []);
 
   const activeData = sessionMap[activeId];
