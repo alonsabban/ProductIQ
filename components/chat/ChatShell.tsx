@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
+import { getCurrentUser, fetchUserAttributes, signInWithRedirect } from "aws-amplify/auth";
 import { configureAmplify, COGNITO_CONFIGURED, isOAuthCallback } from "@/lib/auth";
 import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
@@ -53,12 +53,7 @@ export function ChatShell() {
     if (!COGNITO_CONFIGURED) { setAuthChecked(true); return; }
 
     function redirectToLogin() {
-      const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
-      const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
-      if (domain && clientId) {
-        const redirect = encodeURIComponent(window.location.origin + "/");
-        window.location.href = `https://${domain}/login?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${redirect}`;
-      }
+      signInWithRedirect();
     }
 
     async function checkAuth() {
