@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { getCurrentUser, fetchUserAttributes, signInWithRedirect } from "aws-amplify/auth";
+import { getCurrentUser, fetchAuthSession, signInWithRedirect } from "aws-amplify/auth";
 import { configureAmplify, COGNITO_CONFIGURED, isOAuthCallback } from "@/lib/auth";
 import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
@@ -68,8 +68,9 @@ export function ChatShell() {
         try {
           await getCurrentUser();
           setAuthStatus("Loading…");
-          const attrs = await fetchUserAttributes();
-          setUserEmail(attrs.email ?? undefined);
+          const session = await fetchAuthSession();
+          const email = session.tokens?.idToken?.payload?.email as string | undefined;
+          setUserEmail(email);
           if (onCallback) {
             window.history.replaceState({}, "", window.location.pathname);
           }
