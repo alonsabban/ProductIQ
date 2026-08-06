@@ -7,6 +7,7 @@ import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
 import { ChatInput } from "./ChatInput";
 import { ChatHeader } from "./ChatHeader";
+import { AboutModal } from "./AboutModal";
 import type { Message } from "./MessageBubble";
 import type { ChatSource } from "@/lib/bedrock";
 
@@ -43,6 +44,7 @@ export function ChatShell() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -187,6 +189,7 @@ export function ChatShell() {
 
   return (
     <div className="flex h-screen bg-[#f0f4f9] overflow-hidden">
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       <SessionSidebar
         sessions={sessions}
         activeId={activeId}
@@ -195,6 +198,7 @@ export function ChatShell() {
         onNew={newSession}
         onDelete={deleteSession}
         onToggle={() => setSidebarCollapsed((v) => !v)}
+        onAbout={() => setShowAbout(true)}
         userEmail={userEmail}
       />
 

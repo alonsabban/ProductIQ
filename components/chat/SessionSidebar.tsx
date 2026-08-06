@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatSession {
@@ -17,6 +17,7 @@ interface SessionSidebarProps {
   onNew: () => void;
   onDelete: (id: string) => void;
   onToggle: () => void;
+  onAbout: () => void;
   userEmail?: string;
 }
 
@@ -28,6 +29,7 @@ export function SessionSidebar({
   onNew,
   onDelete,
   onToggle,
+  onAbout,
   userEmail,
 }: SessionSidebarProps) {
   const initials = userEmail
@@ -125,17 +127,41 @@ export function SessionSidebar({
         ))}
       </div>
 
-      {/* User footer */}
-      {!collapsed && userEmail && (
-        <div className="px-3 py-3 border-t border-[var(--sidebar-border)]">
-          <div className="flex items-center gap-2">
+      {/* Footer */}
+      <div className="border-t border-[var(--sidebar-border)] px-2 py-3 flex flex-col gap-2">
+        {/* Product OPS banner */}
+        {!collapsed && (
+          <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-[#243d5c]">
+            <div className="w-5 h-5 rounded bg-[#1a56db] flex items-center justify-center shrink-0">
+              <span className="text-white text-[9px] font-bold leading-none">OPS</span>
+            </div>
+            <span className="text-xs text-[#7a9bbf]">Provided by <span className="text-[#c8d8ec] font-medium">Product OPS</span></span>
+          </div>
+        )}
+
+        {/* About button */}
+        <button
+          onClick={onAbout}
+          className={cn(
+            "flex items-center gap-2 w-full rounded-lg px-2 py-2 text-sm transition-colors",
+            "text-[var(--sidebar-muted)] hover:text-white hover:bg-[var(--sidebar-hover)]",
+            collapsed ? "justify-center" : ""
+          )}
+        >
+          <Info size={14} className="shrink-0" />
+          {!collapsed && <span>About</span>}
+        </button>
+
+        {/* User */}
+        {!collapsed && userEmail && (
+          <div className="flex items-center gap-2 px-2">
             <div className="w-7 h-7 rounded-full bg-[#2e4f78] flex items-center justify-center text-xs font-semibold text-white shrink-0">
               {initials}
             </div>
             <span className="text-xs text-[var(--sidebar-muted)] truncate">{userEmail}</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   );
 }
