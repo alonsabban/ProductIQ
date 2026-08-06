@@ -7,6 +7,8 @@ export function configureAmplify() {
 
   if (!userPoolId || !userPoolClientId) return;
 
+  const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+
   Amplify.configure({
     Auth: {
       Cognito: {
@@ -17,16 +19,8 @@ export function configureAmplify() {
               oauth: {
                 domain,
                 scopes: ["openid", "email", "profile"],
-                redirectSignIn: [
-                  typeof window !== "undefined"
-                    ? `${window.location.origin}/`
-                    : "http://localhost:3000/",
-                ],
-                redirectSignOut: [
-                  typeof window !== "undefined"
-                    ? `${window.location.origin}/`
-                    : "http://localhost:3000/",
-                ],
+                redirectSignIn: [`${origin}/`],
+                redirectSignOut: [`${origin}/`],
                 responseType: "code",
               },
             }
@@ -39,3 +33,9 @@ export function configureAmplify() {
 export const COGNITO_CONFIGURED =
   !!process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID &&
   !!process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+
+export function isOAuthCallback() {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.has("code") || params.has("error");
+}

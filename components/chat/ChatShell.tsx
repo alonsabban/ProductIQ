@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
-import { configureAmplify, COGNITO_CONFIGURED } from "@/lib/auth";
+import { Hub } from "aws-amplify/utils";
+import { configureAmplify, COGNITO_CONFIGURED, isOAuthCallback } from "@/lib/auth";
 import { SessionSidebar, type ChatSession } from "./SessionSidebar";
 import { MessageThread } from "./MessageThread";
 import { ChatInput } from "./ChatInput";
@@ -50,17 +51,52 @@ export function ChatShell() {
 
   useEffect(() => {
     if (!COGNITO_CONFIGURED) { setAuthChecked(true); return; }
+
+    function redirectToLogin() {
+      const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+      const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+      if (domain && clientId) {
+        const redirect = encodeURIComponent(window.location.origin + "/");
+        window.location.href = `https://${domain}/login?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${redirect}`;
+      }
+    }
+
+    // If we're landing from a Cognito redirect (?code=...), wait for Amplify
+    // to exchange the code for tokens before checking auth state.
+    if (isOAuthCallback()) {
+      const unsubscribe = Hub.listen("auth", ({ payload }) => {
+        if (payload.event === "signedIn") {
+          fetchUserAttributes()
+            .then((attrs) => setUserEmail(attrs.email ?? undefined))
+            .finally(() => {
+              setAuthChecked(true);
+              // Clean the ?code= from the URL without a reload
+              window.history.replaceState({}, "", window.location.pathname);
+            });
+          unsubscribe();
+        }
+        if (payload.event === "signInWithRedirect_failure") {
+          unsubscribe();
+          redirectToLogin();
+        }
+      });
+      // Safety timeout — if Hub never fires, fall through to normal check
+      const timer = setTimeout(() => {
+        unsubscribe();
+        getCurrentUser()
+          .then(() => fetchUserAttributes())
+          .then((attrs) => setUserEmail(attrs.email ?? undefined))
+          .catch(redirectToLogin)
+          .finally(() => setAuthChecked(true));
+      }, 5000);
+      return () => { unsubscribe(); clearTimeout(timer); };
+    }
+
+    // Normal page load — check if already signed in
     getCurrentUser()
       .then(() => fetchUserAttributes())
       .then((attrs) => setUserEmail(attrs.email ?? undefined))
-      .catch(() => {
-        const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
-        const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
-        if (domain && clientId) {
-          const redirect = encodeURIComponent(window.location.origin + "/");
-          window.location.href = `https://${domain}/login?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${redirect}`;
-        }
-      })
+      .catch(redirectToLogin)
       .finally(() => setAuthChecked(true));
   }, []);
 
