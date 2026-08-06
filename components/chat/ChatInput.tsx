@@ -40,7 +40,7 @@ export function ChatInput({ value, onChange, onSubmit, loading, disabled }: Chat
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled || loading}
-            placeholder="Ask about CyberArk products…"
+            placeholder="Ask about Idira products…"
             className={cn(
               "w-full resize-none rounded-xl border border-[#ccd9eb] bg-[#f8fafc]",
               "px-4 py-3.5 text-base text-[#0f1f35] placeholder:text-[#9ab0c8]",
@@ -66,7 +66,7 @@ export function ChatInput({ value, onChange, onSubmit, loading, disabled }: Chat
         </button>
       </div>
       <p className="text-center text-xs text-[#9ab0c8] mt-2.5">
-        Answers are grounded in official CyberArk documentation ·{" "}
+        Answers are grounded in official Idira documentation ·{" "}
         <kbd className="font-mono bg-[#e8eef6] px-1 py-0.5 rounded text-[10px]">Shift+Enter</kbd> for new line
       </p>
     </div>

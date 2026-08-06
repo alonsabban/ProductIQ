@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ProductIQ — CyberArk Product Assistant",
+  title: "ProductIQ — Idira Product Assistant",
   description:
-    "Ask natural-language questions about CyberArk products. Answers grounded in official documentation.",
+    "Ask natural-language questions about Idira products. Answers grounded in official documentation.",
   icons: {
     icon: "/favicon.ico",
   },

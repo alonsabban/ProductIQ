@@ -32,8 +32,8 @@ export function AboutModal({ onClose }: AboutModalProps) {
 
         {/* Description */}
         <p className="text-base text-[#1e3a5f] leading-relaxed mb-5">
-          ProductIQ is an AI-powered assistant that answers questions about CyberArk products.
-          All responses are grounded in the official CyberArk documentation library, keeping answers
+          ProductIQ is an AI-powered assistant that answers questions about Idira products.
+          All responses are grounded in the official Idira documentation library, keeping answers
           accurate and up to date.
         </p>
 
@@ -53,8 +53,8 @@ export function AboutModal({ onClose }: AboutModalProps) {
           <p className="text-sm font-semibold text-[#0f1f35] mb-3">Questions or feedback?</p>
           <div className="flex flex-col gap-2.5">
             {[
-              { name: "Alon Sabban", email: "alon.sabban@cyberark.com" },
-              { name: "Dan Bidner", email: "dan.bidner@cyberark.com" },
+              { name: "Alon Sabban", email: "asabban@paloaltonetworks.com" },
+              { name: "Dan Bidner", email: "dbidner@paloaltonetworks.com" },
             ].map(({ name, email }) => (
               <a
                 key={email}

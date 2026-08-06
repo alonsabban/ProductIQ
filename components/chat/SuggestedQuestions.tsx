@@ -3,10 +3,10 @@ interface SuggestedQuestionsProps {
 }
 
 const SUGGESTIONS = [
-  "What is CyberArk Privilege Cloud?",
-  "How does CyberArk Identity handle MFA?",
+  "What is Idira Privilege Cloud?",
+  "How does Idira Identity handle MFA?",
   "What is the difference between PAM Self-Hosted and Privilege Cloud?",
-  "How do I configure session recording in CyberArk?",
+  "How do I configure session recording in Idira?",
 ];
 
 export function SuggestedQuestions({ onSelect }: SuggestedQuestionsProps) {
@@ -22,10 +22,10 @@ export function SuggestedQuestions({ onSelect }: SuggestedQuestionsProps) {
           </svg>
         </div>
         <h2 className="text-2xl font-semibold text-[#0f1f35] mb-2">
-          Ask me anything about CyberArk
+          Ask me anything about Idira
         </h2>
         <p className="text-base text-[#4a6889] max-w-md">
-          I&apos;m grounded in the official CyberArk product documentation. Try one of these to get started:
+          I&apos;m grounded in the official Idira product documentation. Try one of these to get started:
         </p>
       </div>
 
