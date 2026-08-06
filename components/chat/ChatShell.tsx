@@ -47,6 +47,7 @@ export function ChatShell() {
   const [showAbout, setShowAbout] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const [authChecked, setAuthChecked] = useState(false);
+  const [authStatus, setAuthStatus] = useState("Initialising…");
 
   useEffect(() => {
     if (!COGNITO_CONFIGURED) { setAuthChecked(true); return; }
@@ -65,9 +66,13 @@ export function ChatShell() {
       const maxAttempts = onCallback ? 10 : 1;
       const delay = 600;
 
+      if (onCallback) setAuthStatus("Processing login…");
+
       for (let i = 0; i < maxAttempts; i++) {
+        if (onCallback && i > 0) setAuthStatus(`Verifying session (${i}/${maxAttempts})…`);
         try {
           await getCurrentUser();
+          setAuthStatus("Loading…");
           const attrs = await fetchUserAttributes();
           setUserEmail(attrs.email ?? undefined);
           if (onCallback) {
@@ -81,7 +86,8 @@ export function ChatShell() {
           }
         }
       }
-      // All attempts failed — not signed in
+      setAuthStatus("Redirecting to login…");
+      await new Promise((r) => setTimeout(r, 1500)); // pause so user can read the message
       redirectToLogin();
     }
 
@@ -205,7 +211,8 @@ export function ChatShell() {
           <div className="w-11 h-11 rounded-xl bg-[#1a56db] flex items-center justify-center animate-pulse">
             <MessageSquareIcon />
           </div>
-          <p className="text-base text-[#4a6889]">Loading ProductIQ…</p>
+          <p className="text-base text-[#4a6889]">{authStatus}</p>
+          <a href="/debug" className="text-xs text-[#9ab0c8] underline mt-1">auth debug</a>
         </div>
       </div>
     );
