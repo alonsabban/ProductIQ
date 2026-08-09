@@ -26,6 +26,21 @@ function TypingIndicator() {
   );
 }
 
+function renderInline(text: string): React.ReactNode[] {
+  const parts = text.split(/(\[\d+\])/g);
+  return parts.map((part, i) => {
+    const match = part.match(/^\[(\d+)\]$/);
+    if (match) {
+      return (
+        <sup key={i} className="inline-flex items-center justify-center w-4 h-4 mx-0.5 rounded text-[10px] font-semibold bg-[#e3eaf5] text-[#1a56db] align-super leading-none">
+          {match[1]}
+        </sup>
+      );
+    }
+    return part;
+  });
+}
+
 function renderContent(text: string) {
   const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
@@ -43,7 +58,7 @@ function renderContent(text: string) {
       }
       elements.push(
         <ul key={i} className="list-disc">
-          {items.map((item, j) => <li key={j}>{item}</li>)}
+          {items.map((item, j) => <li key={j}>{renderInline(item)}</li>)}
         </ul>
       );
     } else if (/^\d+\.\s/.test(line)) {
@@ -54,11 +69,11 @@ function renderContent(text: string) {
       }
       elements.push(
         <ol key={i} className="list-decimal">
-          {items.map((item, j) => <li key={j}>{item}</li>)}
+          {items.map((item, j) => <li key={j}>{renderInline(item)}</li>)}
         </ol>
       );
     } else {
-      elements.push(<p key={i}>{line}</p>);
+      elements.push(<p key={i}>{renderInline(line)}</p>);
       i++;
     }
   }

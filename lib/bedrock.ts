@@ -42,19 +42,47 @@ function extractTitle(uri: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function parseCitations(citations: Citation[]): ChatSource[] {
-  const seen = new Set<string>();
+function buildAnnotatedAnswer(
+  answerText: string,
+  citations: Citation[]
+): { answer: string; sources: ChatSource[] } {
+  const uriToIndex = new Map<string, number>();
   const sources: ChatSource[] = [];
+  const endMap = new Map<number, Set<number>>();
+
   for (const citation of citations) {
+    const span = citation.generatedResponsePart?.textResponsePart?.span;
+    const indices: number[] = [];
+
     for (const ref of citation.retrievedReferences ?? []) {
       const uri = ref.location?.s3Location?.uri ?? "";
-      if (uri && !seen.has(uri)) {
-        seen.add(uri);
+      if (!uri) continue;
+      if (!uriToIndex.has(uri)) {
+        uriToIndex.set(uri, sources.length);
         sources.push({ title: extractTitle(uri), uri });
       }
+      const idx = uriToIndex.get(uri)!;
+      if (!indices.includes(idx)) indices.push(idx);
+    }
+
+    if (span?.end !== undefined && indices.length > 0) {
+      if (!endMap.has(span.end)) endMap.set(span.end, new Set());
+      for (const idx of indices) endMap.get(span.end)!.add(idx);
     }
   }
-  return sources;
+
+  // Insert markers right-to-left so earlier offsets stay valid
+  const positions = [...endMap.keys()].sort((a, b) => b - a);
+  let answer = answerText;
+  for (const pos of positions) {
+    const marker = [...endMap.get(pos)!]
+      .sort((a, b) => a - b)
+      .map((i) => `[${i + 1}]`)
+      .join("");
+    answer = answer.slice(0, pos) + marker + answer.slice(pos);
+  }
+
+  return { answer, sources };
 }
 
 export async function queryKnowledgeBase(
@@ -80,9 +108,8 @@ export async function queryKnowledgeBase(
 
   const response = await client.send(command);
 
-  return {
-    answer: response.output?.text ?? "I could not find an answer to that question.",
-    sources: parseCitations(response.citations ?? []),
-    sessionId: response.sessionId ?? "",
-  };
+  const rawAnswer = response.output?.text ?? "I could not find an answer to that question.";
+  const { answer, sources } = buildAnnotatedAnswer(rawAnswer, response.citations ?? []);
+
+  return { answer, sources, sessionId: response.sessionId ?? "" };
 }
