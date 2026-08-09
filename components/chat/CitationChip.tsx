@@ -29,7 +29,7 @@ export function CitationChip({ sources }: CitationChipProps) {
           {sources.map((src, i) => (
             <li key={i}>
               <a
-                href={`https://s3.console.aws.amazon.com/s3/object/${src.uri.replace("s3://", "").replace("/", "?prefix=")}`}
+                href={`https://docs.cyberark.com/${src.uri.replace(/^s3:\/\/[^/]+\//, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-[#1a56db] hover:text-[#1e40af] transition-colors group"
