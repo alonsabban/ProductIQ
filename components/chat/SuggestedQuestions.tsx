@@ -22,10 +22,10 @@ export function SuggestedQuestions({ onSelect }: SuggestedQuestionsProps) {
           </svg>
         </div>
         <h2 className="text-2xl font-semibold text-[#0f1f35] mb-2">
-          Ask me anything about Idira
+          Ask me anything about Idira Products
         </h2>
         <p className="text-base text-[#4a6889] max-w-md">
-          I&apos;m grounded in the official Idira product documentation. Try one of these to get started:
+          Based on the official Idira product documentation. Try one of these to get started:
         </p>
       </div>
 
