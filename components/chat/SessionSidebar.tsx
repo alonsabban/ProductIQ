@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Info, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatSession {
@@ -138,6 +138,21 @@ export function SessionSidebar({
             <span className="text-xs text-[#7a9bbf]">Provided by <span className="text-[#c8d8ec] font-medium">Product OPS</span></span>
           </div>
         )}
+
+        {/* Docs button */}
+        <a
+          href="/docs.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            "flex items-center gap-2 w-full rounded-lg px-2 py-2 text-sm transition-colors",
+            "text-[var(--sidebar-muted)] hover:text-white hover:bg-[var(--sidebar-hover)]",
+            collapsed ? "justify-center" : ""
+          )}
+        >
+          <BookOpen size={14} className="shrink-0" />
+          {!collapsed && <span>Architecture Docs</span>}
+        </a>
 
         {/* About button */}
         <button
