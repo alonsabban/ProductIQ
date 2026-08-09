@@ -193,6 +193,96 @@
     font-size: 13px;
   }
   .flow-arrow { color: var(--muted); font-size: 18px; line-height: 1; }
+
+  /* SEARCH */
+  .search-wrap {
+    padding: 12px 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .search-inner {
+    position: relative;
+    max-width: 480px;
+  }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 15px; pointer-events: none;
+  }
+  #search-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px 8px 34px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search-input:focus { border-color: var(--accent); }
+  #search-input::placeholder { color: var(--muted); }
+  #search-results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-height: 340px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .sr-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .sr-item:last-child { border-bottom: none; }
+  .sr-item:hover { background: rgba(0,196,255,0.06); }
+  .sr-tab { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; font-weight: 600; }
+  .sr-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .sr-text mark { background: rgba(0,196,255,0.25); color: var(--accent); border-radius: 2px; padding: 0 2px; }
+  .sr-empty { padding: 16px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* RELEASE NOTES */
+  .rn-entry {
+    border-left: 3px solid var(--accent);
+    padding: 0 0 28px 24px;
+    position: relative;
+    margin-left: 8px;
+  }
+  .rn-entry:last-child { padding-bottom: 0; }
+  .rn-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: absolute;
+    left: -8px; top: 4px;
+    box-shadow: 0 0 8px rgba(0,196,255,0.5);
+  }
+  .rn-version { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+  .rn-date { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .rn-change {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 10px; font-size: 13px; line-height: 1.6;
+  }
+  .rn-badge {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .rn-new  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .rn-fix  { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .rn-imp  { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
 </style>
 </head>
 <body>
@@ -208,10 +298,19 @@
   </div>
 </header>
 
+<div class="search-wrap">
+  <div class="search-inner">
+    <span class="search-icon">🔍</span>
+    <input id="search-input" type="search" placeholder="Search documentation…" autocomplete="off"/>
+    <div id="search-results"></div>
+  </div>
+</div>
+
 <nav>
   <button class="tab-btn active" onclick="showTab('arch')"><span class="tab-icon">🏗</span> General Architecture</button>
   <button class="tab-btn" onclick="showTab('data')"><span class="tab-icon">⚡</span> Data Flow</button>
   <button class="tab-btn" onclick="showTab('flows')"><span class="tab-icon">🔄</span> User Flows</button>
+  <button class="tab-btn" onclick="showTab('relnotes')"><span class="tab-icon">📋</span> Release Notes</button>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════════════ TAB 1: ARCHITECTURE -->
@@ -1031,6 +1130,58 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════ TAB 4: RELEASE NOTES -->
+<div class="tab-pane" id="tab-relnotes">
+  <div class="section-title">📋 Release Notes</div>
+  <p class="section-subtitle">All notable changes to ProductIQ, in reverse chronological order. Deployed via GitHub push to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">master</code> → Amplify CI/CD.</p>
+
+  <div class="rn-entry">
+    <div class="rn-dot"></div>
+    <div class="rn-version">v1.4 — Inline Citation Numbers</div>
+    <div class="rn-date">2026-08-09</div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Reference numbers (e.g. <strong>[1]</strong>, <strong>[2]</strong>) are now injected inline into the answer text at the exact character positions provided by Bedrock's span offsets — rendered as small blue superscript chips.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-imp">Improved</span><span>Citation links deduplicated by final URL so the same documentation page is never listed twice in the sources panel.</span></div>
+  </div>
+
+  <div class="rn-entry">
+    <div class="rn-dot"></div>
+    <div class="rn-version">v1.3 — Real Documentation Links</div>
+    <div class="rn-date">2026-08-09</div>
+    <div class="rn-change"><span class="rn-badge rn-fix">Fix</span><span>Citation source links now point to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">docs.cyberark.com</code> instead of the internal AWS S3 Console. The S3 key path maps directly to the public documentation URL.</span></div>
+  </div>
+
+  <div class="rn-entry">
+    <div class="rn-dot"></div>
+    <div class="rn-version">v1.2 — Architecture Documentation</div>
+    <div class="rn-date">2026-08-09</div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>This documentation site added at <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/docs.html</code> — covers General Architecture, Data Flow, and User Flows with interactive SVG diagrams.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Architecture documentation added to the sidebar as a persistent link.</span></div>
+  </div>
+
+  <div class="rn-entry">
+    <div class="rn-dot"></div>
+    <div class="rn-version">v1.1 — Auth Hardening &amp; UX Polish</div>
+    <div class="rn-date">2026-08-07</div>
+    <div class="rn-change"><span class="rn-badge rn-fix">Fix</span><span>Replaced manual Cognito URL construction with <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">signInWithRedirect()</code> to fix the OAuth redirect loop caused by PKCE verifier mismatch.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-fix">Fix</span><span>Read email from <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">idToken.payload.email</code> instead of <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">fetchUserAttributes()</code> to avoid scope issues.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Added <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/debug</code> page for diagnosing Cognito auth state — always accessible without auth.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-imp">Improved</span><span>Replaced CyberArk branding with Idira throughout the UI and updated contact emails.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Added About modal and Product OPS banner.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-imp">Improved</span><span>Light theme applied, larger fonts, multi-session sidebar with session CRUD.</span></div>
+  </div>
+
+  <div class="rn-entry">
+    <div class="rn-dot" style="background:var(--muted);box-shadow:none"></div>
+    <div class="rn-version" style="color:var(--muted)">v1.0 — Initial Release</div>
+    <div class="rn-date">2026-08-06</div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Next.js 16 App Router + Tailwind + shadcn/ui chat interface backed by Bedrock Knowledge Base <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">CZIH7OWOAT</code>.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Cognito authentication restricted to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">@paloaltonetworks.com</code> via Pre Sign-Up Lambda.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Citation chips showing which source documents back each answer, with collapsible source list.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Suggested questions on the welcome screen for common Idira product queries.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Deployed to AWS Amplify SSR with GitHub CI/CD on push to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">master</code>.</span></div>
+  </div>
+</div>
+
 <script>
 function showTab(id) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -1038,6 +1189,64 @@ function showTab(id) {
   document.getElementById('tab-' + id).classList.add('active');
   event.currentTarget.classList.add('active');
 }
+
+// ── SEARCH ──────────────────────────────────────────────────────────────────
+const SEARCH_INDEX = [];
+function buildIndex() {
+  document.querySelectorAll('.tab-pane').forEach(pane => {
+    const tabId = pane.id.replace('tab-', '');
+    const tabLabel = document.querySelector(`[onclick="showTab('${tabId}')"]`)?.textContent?.trim() ?? tabId;
+    pane.querySelectorAll('p, li, .step-desc, .step-title, .card-title, .info-card-value, .rn-version, .rn-change').forEach(el => {
+      const text = el.textContent.trim();
+      if (text.length > 10) SEARCH_INDEX.push({ tabId, tabLabel, text, el });
+    });
+  });
+}
+
+const input = document.getElementById('search-input');
+const results = document.getElementById('search-results');
+
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function highlight(text, query) {
+  return text.replace(new RegExp('(' + escapeRe(query) + ')', 'gi'), '<mark>$1</mark>');
+}
+
+input.addEventListener('input', () => {
+  const q = input.value.trim();
+  if (q.length < 2) { results.style.display = 'none'; return; }
+  const re = new RegExp(escapeRe(q), 'i');
+  const hits = SEARCH_INDEX.filter(item => re.test(item.text)).slice(0, 12);
+  if (!hits.length) {
+    results.innerHTML = '<div class="sr-empty">No results found</div>';
+  } else {
+    results.innerHTML = hits.map((h, i) =>
+      `<div class="sr-item" data-idx="${i}">
+        <div class="sr-tab">${h.tabLabel}</div>
+        <div class="sr-text">${highlight(h.text.slice(0, 160), q)}</div>
+      </div>`
+    ).join('');
+    results.querySelectorAll('.sr-item').forEach((el, i) => {
+      el.addEventListener('click', () => {
+        showTab(hits[i].tabId);
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          if (b.getAttribute('onclick') === `showTab('${hits[i].tabId}')`) b.classList.add('active');
+        });
+        hits[i].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        results.style.display = 'none';
+        input.value = '';
+      });
+    });
+  }
+  results.style.display = 'block';
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-inner')) results.style.display = 'none';
+});
+
+document.addEventListener('DOMContentLoaded', buildIndex);
+setTimeout(buildIndex, 200);
 </script>
 </body>
 </html>
