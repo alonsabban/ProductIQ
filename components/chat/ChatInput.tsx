@@ -31,16 +31,16 @@ export function ChatInput({ value, onChange, onSubmit, loading, disabled }: Chat
 
   return (
     <div className="relative border-t border-[#ccd9eb] bg-white px-4 py-4 shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
-      {/* Product OPS badge — right edge, full height of bar */}
-      <div className="absolute inset-y-0 right-0 flex flex-col items-center justify-center w-24 bg-[#0f1f35] border-l border-[#1e3a5f] select-none">
+      {/* Delivered by Product OPS badge — right edge, full height of bar */}
+      <div className="absolute inset-y-0 right-0 flex flex-col items-center justify-center w-36 bg-[#0f1f35] border-l border-[#1e3a5f] select-none px-3">
         <div className="w-5 h-5 rounded bg-[#1a56db] flex items-center justify-center mb-1.5 shrink-0">
           <span className="text-white text-[8px] font-bold leading-none tracking-wide">OPS</span>
         </div>
-        <span className="text-[9px] font-medium text-[#4a6889] uppercase tracking-widest leading-tight text-center">Provided by</span>
-        <span className="text-[10px] font-semibold text-[#7aa8d4] leading-tight text-center">Product OPS</span>
+        <span className="text-[9px] font-medium text-[#5b8fc4] uppercase tracking-widest leading-tight text-center">Delivered by</span>
+        <span className="text-[11px] font-semibold text-[#93c5fd] leading-tight text-center">Product OPS</span>
       </div>
 
-      <div className="max-w-3xl mx-auto flex items-end gap-3 pr-28">
+      <div className="max-w-3xl mx-auto flex items-end gap-3 pr-40">
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
