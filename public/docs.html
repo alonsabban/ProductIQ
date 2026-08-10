@@ -753,7 +753,7 @@
 <div class="tab-pane" id="tab-flows">
   <div class="section-title">🔄 User Flows</div>
   <p class="section-subtitle">
-    The three primary flows: first-time authentication, sending a chat message (happy path), and managing multiple conversation sessions.
+    The four primary flows: first-time authentication, sending a chat message (happy path), managing multiple conversation sessions, and the unanswered question handling flow.
   </p>
 
   <!-- FLOW 1: AUTHENTICATION -->
@@ -1130,10 +1130,170 @@
   </div>
 </div>
 
+  <!-- FLOW 4: UNANSWERED QUESTIONS -->
+  <div class="card" style="margin-bottom:32px">
+    <div class="card-title" style="font-size:17px;margin-bottom:16px">Flow 4 — Unanswered Question Handling</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:20px">When Bedrock returns zero source citations, the question is flagged as unanswered and routed based on whether the product can be auto-detected.</p>
+
+    <!-- Swimlane diagram -->
+    <div class="diagram-wrap" style="background:transparent;border:none;padding:0">
+      <svg viewBox="0 0 900 520" width="900" height="520">
+        <defs>
+          <marker id="ufa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#00c4ff"/>
+          </marker>
+          <marker id="ufa-g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+          </marker>
+          <marker id="ufa-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+          </marker>
+        </defs>
+
+        <!-- Swimlane backgrounds -->
+        <rect x="0"   y="0" width="225" height="520" fill="rgba(14,165,233,0.03)"/>
+        <rect x="225" y="0" width="225" height="520" fill="rgba(59,130,246,0.03)"/>
+        <rect x="450" y="0" width="225" height="520" fill="rgba(124,58,237,0.03)"/>
+        <rect x="675" y="0" width="225" height="520" fill="rgba(16,185,129,0.03)"/>
+
+        <!-- Header bar -->
+        <rect x="0" y="0" width="900" height="32" fill="rgba(0,0,0,0.5)"/>
+        <text x="112" y="21" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="700" letter-spacing="1">USER / BROWSER</text>
+        <text x="337" y="21" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700" letter-spacing="1">NEXT.JS API</text>
+        <text x="562" y="21" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="700" letter-spacing="1">BEDROCK + DYNAMODB</text>
+        <text x="787" y="21" text-anchor="middle" fill="#34d399" font-size="12" font-weight="700" letter-spacing="1">CHAT UI</text>
+
+        <!-- Lane dividers -->
+        <line x1="225" y1="32" x2="225" y2="520" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <line x1="450" y1="32" x2="450" y2="520" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <line x1="675" y1="32" x2="675" y2="520" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+        <!-- R1: User sends question -->
+        <rect x="12" y="50" width="201" height="40" rx="8" fill="#0f2847" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="112" y="65" text-anchor="middle" fill="#e2eaf6" font-size="12" font-weight="600">User sends question</text>
+        <text x="112" y="81" text-anchor="middle" fill="#6b8ab0" font-size="11">POST /api/chat</text>
+        <!-- arrow → API -->
+        <line x1="213" y1="70" x2="237" y2="70" stroke="#00c4ff" stroke-width="1.5" marker-end="url(#ufa)"/>
+
+        <!-- R1: KB query -->
+        <rect x="237" y="50" width="201" height="40" rx="8" fill="#0f2847" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="337" y="65" text-anchor="middle" fill="#e2eaf6" font-size="12" font-weight="600">queryKnowledgeBase()</text>
+        <text x="337" y="81" text-anchor="middle" fill="#6b8ab0" font-size="11">RetrieveAndGenerate</text>
+        <!-- arrow → Bedrock -->
+        <line x1="438" y1="70" x2="462" y2="70" stroke="#00c4ff" stroke-width="1.5" marker-end="url(#ufa)"/>
+
+        <!-- R1: Bedrock returns -->
+        <rect x="462" y="50" width="201" height="40" rx="8" fill="#0f2847" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="562" y="65" text-anchor="middle" fill="#e2eaf6" font-size="12" font-weight="600">Bedrock responds</text>
+        <text x="562" y="81" text-anchor="middle" fill="#6b8ab0" font-size="11">sources.length === 0</text>
+
+        <!-- Down arrow from Bedrock -->
+        <line x1="562" y1="90" x2="562" y2="116" stroke="#00c4ff" stroke-width="1.5" marker-end="url(#ufa)"/>
+
+        <!-- Decision diamond -->
+        <polygon points="562,120 622,148 562,176 502,148" fill="#1a1a2e" stroke="#f59e0b" stroke-width="2"/>
+        <text x="562" y="145" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="700">Product</text>
+        <text x="562" y="159" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="700">detected?</text>
+
+        <!-- YES branch: left → log + notify -->
+        <text x="480" y="143" text-anchor="middle" fill="#34d399" font-size="11" font-weight="600">YES</text>
+        <line x1="502" y1="148" x2="462" y2="148" stroke="#10b981" stroke-width="1.5" marker-end="url(#ufa-g)"/>
+        <rect x="237" y="128" width="201" height="40" rx="8" fill="#0a2820" stroke="#10b981" stroke-width="1.5"/>
+        <text x="337" y="143" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Log to DynamoDB</text>
+        <text x="337" y="159" text-anchor="middle" fill="#6b8ab0" font-size="11">question + userId + product</text>
+
+        <!-- Arrow down from log box -->
+        <line x1="337" y1="168" x2="337" y2="216" stroke="#10b981" stroke-width="1.5" marker-end="url(#ufa-g)"/>
+
+        <!-- Return PM card to UI (YES path) -->
+        <rect x="237" y="216" width="201" height="40" rx="8" fill="#0a2820" stroke="#10b981" stroke-width="1.5"/>
+        <text x="337" y="231" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Return PM contact</text>
+        <text x="337" y="247" text-anchor="middle" fill="#6b8ab0" font-size="11">name + email in response</text>
+        <!-- arrow → UI -->
+        <line x1="438" y1="236" x2="675" y2="236" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ufa-g)"/>
+
+        <!-- UI: PM card shown -->
+        <rect x="687" y="216" width="201" height="40" rx="8" fill="#0a2820" stroke="#10b981" stroke-width="1.5"/>
+        <text x="787" y="231" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">PM card shown in chat</text>
+        <text x="787" y="247" text-anchor="middle" fill="#6b8ab0" font-size="11">name · email link</text>
+
+        <!-- NO branch: right → ask user -->
+        <text x="645" y="143" text-anchor="middle" fill="#f87171" font-size="11" font-weight="600">NO</text>
+        <line x1="622" y1="148" x2="662" y2="148" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ufa-o)"/>
+        <rect x="662" y="128" width="201" height="40" rx="8" fill="#2a1a05" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="762" y="143" text-anchor="middle" fill="#fcd34d" font-size="12" font-weight="600">Return product picker</text>
+        <text x="762" y="159" text-anchor="middle" fill="#6b8ab0" font-size="11">productOptions list</text>
+
+        <!-- Arrow down: product picker to UI -->
+        <line x1="762" y1="168" x2="762" y2="296" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ufa-o)"/>
+
+        <!-- UI: picker buttons -->
+        <rect x="687" y="296" width="201" height="40" rx="8" fill="#2a1a05" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="787" y="311" text-anchor="middle" fill="#fcd34d" font-size="12" font-weight="600">Picker buttons shown</text>
+        <text x="787" y="327" text-anchor="middle" fill="#6b8ab0" font-size="11">one per product</text>
+
+        <!-- Arrow down: user clicks -->
+        <line x1="787" y1="336" x2="787" y2="364" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ufa-o)"/>
+
+        <!-- User clicks -->
+        <rect x="687" y="364" width="201" height="40" rx="8" fill="#0f2847" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="787" y="379" text-anchor="middle" fill="#e2eaf6" font-size="12" font-weight="600">User clicks product</text>
+        <text x="787" y="395" text-anchor="middle" fill="#6b8ab0" font-size="11">POST /api/chat/clarify-product</text>
+
+        <!-- Arrow left: clarify-product → API -->
+        <line x1="687" y1="384" x2="462" y2="384" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ufa-o)"/>
+
+        <!-- API: log + return PM -->
+        <rect x="237" y="364" width="201" height="40" rx="8" fill="#2a1a05" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="337" y="379" text-anchor="middle" fill="#fcd34d" font-size="12" font-weight="600">Log + return PM info</text>
+        <text x="337" y="395" text-anchor="middle" fill="#6b8ab0" font-size="11">DynamoDB write · PM lookup</text>
+
+        <!-- Arrow right: PM info → UI -->
+        <line x1="438" y1="384" x2="687" y2="384" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ufa-g)"/>
+
+        <!-- Final: picker replaced by PM card -->
+        <rect x="687" y="444" width="201" height="40" rx="8" fill="#0a2820" stroke="#10b981" stroke-width="1.5"/>
+        <text x="787" y="459" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Picker → PM card</text>
+        <text x="787" y="475" text-anchor="middle" fill="#6b8ab0" font-size="11">contact shown in-place</text>
+        <line x1="787" y1="404" x2="787" y2="444" stroke="#10b981" stroke-width="1.5" marker-end="url(#ufa-g)"/>
+      </svg>
+    </div>
+
+    <div class="expl-grid">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Detection Logic</div>
+        <div class="step-list">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Zero-source signal</div><div class="step-desc">If Bedrock's <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">sources.length === 0</code>, the question is considered unanswered. This check lives in <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/app/api/chat/route.ts</code>.</div></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">DynamoDB logging</div><div class="step-desc">The question, userId (Cognito email), sessionId, timestamp, and product are written to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">productiq-unanswered-questions</code> in DynamoDB on-demand. Logging failures are silent so they never break the chat response.</div></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Privacy</div><div class="step-desc">The userId (question author) is stored in DynamoDB for future PM routing but is never shown in the public <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/unanswered</code> dashboard visible to all users.</div></div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Unanswered Questions Dashboard</div>
+        <div class="step-list">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Location</div><div class="step-desc">Accessible at <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/unanswered</code> via the sidebar nav. Visible to all logged-in users.</div></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Data source</div><div class="step-desc">Client-side fetch to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">GET /api/unanswered</code> which does a full DynamoDB Scan, sorted newest-first in JS. Includes a refresh button.</div></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Columns shown</div><div class="step-desc">Date &amp; time · Product (or "Unknown") · Question text. User identity is intentionally omitted from the table.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- ══════════════════════════════════════════ TAB 4: RELEASE NOTES -->
 <div class="tab-pane" id="tab-relnotes">
   <div class="section-title">📋 Release Notes</div>
   <p class="section-subtitle">All notable changes to ProductIQ, in reverse chronological order. Deployed via GitHub push to <code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">master</code> → Amplify CI/CD.</p>
+
+  <div class="rn-entry">
+    <div class="rn-dot"></div>
+    <div class="rn-version">v1.5 — Unanswered Questions Logging &amp; Dashboard</div>
+    <div class="rn-date">2026-08-10</div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>Questions with no matching documentation are now silently logged to a dedicated DynamoDB table (<code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">productiq-unanswered-questions</code>) — capturing question text, user identity, session ID, timestamp, and product.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span><code style="background:rgba(0,196,255,0.1);color:var(--accent);padding:1px 5px;border-radius:3px">/unanswered</code> dashboard page — a table visible to all logged-in users showing every unanswered question sorted newest-first, with date, product, and question text.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-new">New</span><span>"Unanswered Questions" added as a nav item in the sidebar footer, alongside Architecture Docs and About.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-imp">Improved</span><span>"Provided by Product OPS" badge relocated from the sidebar to a prominent dark rectangle pinned to the right edge of the chat input bar, full height.</span></div>
+    <div class="rn-change"><span class="rn-badge rn-imp">Improved</span><span>Question author (userId) is stored in DynamoDB for future PM routing but intentionally omitted from the public dashboard for privacy.</span></div>
+  </div>
 
   <div class="rn-entry">
     <div class="rn-dot"></div>
