@@ -130,16 +130,6 @@ export function SessionSidebar({
 
       {/* Footer */}
       <div className="border-t border-[var(--sidebar-border)] px-2 py-3 flex flex-col gap-2">
-        {/* Product OPS banner */}
-        {!collapsed && (
-          <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-[#243d5c]">
-            <div className="w-5 h-5 rounded bg-[#1a56db] flex items-center justify-center shrink-0">
-              <span className="text-white text-[9px] font-bold leading-none">OPS</span>
-            </div>
-            <span className="text-xs text-[#7a9bbf]">Provided by <span className="text-[#c8d8ec] font-medium">Product OPS</span></span>
-          </div>
-        )}
-
         {/* Unanswered questions link */}
         <Link
           href="/unanswered"
