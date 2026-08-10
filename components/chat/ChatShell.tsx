@@ -154,7 +154,7 @@ export function ChatShell() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, sessionId: bedrockSessionId }),
+          body: JSON.stringify({ message: trimmed, sessionId: bedrockSessionId, userId: userEmail ?? "anonymous" }),
         });
 
         const data: { answer: string; sources: ChatSource[]; sessionId: string; error?: string } =

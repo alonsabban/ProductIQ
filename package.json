@@ -11,6 +11,8 @@
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.7.3",
     "@aws-sdk/client-bedrock-agent-runtime": "^3.1104.0",
+    "@aws-sdk/client-dynamodb": "^3.1106.0",
+    "@aws-sdk/lib-dynamodb": "^3.1106.0",
     "@base-ui/react": "^1.7.0",
     "aws-amplify": "^6.20.0",
     "class-variance-authority": "^0.7.1",

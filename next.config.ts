@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@aws-sdk/client-bedrock-agent-runtime"],
+  serverExternalPackages: [
+    "@aws-sdk/client-bedrock-agent-runtime",
+    "@aws-sdk/client-dynamodb",
+    "@aws-sdk/lib-dynamodb",
+  ],
   env: {
     BEDROCK_REGION: process.env.BEDROCK_REGION ?? "us-east-1",
     BEDROCK_ACCESS_KEY_ID: process.env.BEDROCK_ACCESS_KEY_ID ?? "",

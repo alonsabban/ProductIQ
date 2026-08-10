@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, MessageSquareX } from "lucide-react";
+import Link from "next/link";
 import { signOut } from "aws-amplify/auth";
 import { COGNITO_CONFIGURED } from "@/lib/auth";
 
@@ -35,6 +36,13 @@ export function ChatHeader({ title, userEmail, userInitials, onNewSession, showN
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        <Link
+          href="/unanswered"
+          className="flex items-center gap-1.5 text-sm text-[#4a6889] hover:text-[#0f1f35] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#e8eef6]"
+        >
+          <MessageSquareX size={14} />
+          <span className="hidden sm:inline">Unanswered</span>
+        </Link>
         {userEmail && (
           <div className="hidden sm:flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-[#1a56db] flex items-center justify-center text-sm font-semibold text-white">
