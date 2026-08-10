@@ -73,7 +73,7 @@ export default function UnansweredPage() {
             </div>
           </div>
           <div className="bg-white border border-[#ccd9eb] rounded-xl px-5 py-3 flex items-center gap-3 shadow-sm">
-            <div className="w-8 h-8 rounded-lg bg-[#f0f6ff] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#fffbeb] flex items-center justify-center">
               <span className="text-sm">❓</span>
             </div>
             <div>
@@ -90,7 +90,7 @@ export default function UnansweredPage() {
           <div className="px-5 py-4 border-b border-[#eef2f7]">
             <h2 className="text-sm font-semibold text-[#0f1f35]">All Questions</h2>
             <p className="text-xs text-[#4a6889] mt-0.5">
-              Sorted newest first · Questions with no answer found in the documentation
+              Sorted newest first · Questions with no answer found in the documentation · Question origin is anonymised
             </p>
           </div>
 
@@ -125,9 +125,6 @@ export default function UnansweredPage() {
                       Date &amp; Time
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-[#4a6889] uppercase tracking-wide">
-                      Asked By
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-[#4a6889] uppercase tracking-wide">
                       Product
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-[#4a6889] uppercase tracking-wide">
@@ -148,11 +145,6 @@ export default function UnansweredPage() {
                         <td className="px-5 py-4 whitespace-nowrap">
                           <div className="font-medium text-[#0f1f35]">{date}</div>
                           <div className="text-xs text-[#4a6889] mt-0.5">{time}</div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span className="inline-block bg-[#f0f6ff] text-[#1a56db] text-xs font-medium px-2.5 py-1 rounded-full">
-                            {item.userId}
-                          </span>
                         </td>
                         <td className="px-5 py-4">
                           {item.product ? (
